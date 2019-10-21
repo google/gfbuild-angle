@@ -107,7 +107,7 @@ case "$(uname)" in
   ENABLE_VULKAN="true"
   # Needed for depot_tools on Windows.
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
-  PY2PATH_WIN="$(py -2 'import os;import sys;print(os.path.dirname(sys.executable))')"
+  PY2PATH_WIN="$(py -2 -c 'import os;import sys;print(os.path.dirname(sys.executable))')"
   PY2PATH_UNIX="$(cygpath "${PY2PATH_WIN}")"
   export PATH="${PY2PATH_UNIX}:${PATH}"
   # TODO: Could remove.
