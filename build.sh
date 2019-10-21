@@ -26,20 +26,20 @@ case "$(uname)" in
 "Linux")
   GH_RELEASE_TOOL_ARCH="linux_amd64"
   BUILD_PLATFORM="Linux_x64"
-  PYTHON="python3"
+  PYTHON=("python")
   ;;
 
 "Darwin")
   GH_RELEASE_TOOL_ARCH="darwin_amd64"
   BUILD_PLATFORM="Mac_x64"
-  PYTHON="python3"
+  PYTHON=("python")
   brew install md5sha1sum
   ;;
 
 "MINGW"*)
   GH_RELEASE_TOOL_ARCH="windows_amd64"
   BUILD_PLATFORM="Windows_x64"
-  PYTHON="python"
+  PYTHON=("py" "-2")
   choco install zip
 
   # Needed for depot_tools on Windows.
@@ -101,7 +101,7 @@ git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NA
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
-"${PYTHON}" scripts/bootstrap.py
+"${PYTHON[@]}" scripts/bootstrap.py
 gclient sync
 ###### END EDIT ######
 
