@@ -71,6 +71,8 @@ GH_RELEASE_TOOL_VERSION="v1.1.0"
 
 mkdir -p "${HOME}/bin"
 
+export PATH="${HOME}/depot_tools:${HOME}/bin:$PATH"
+
 pushd "${HOME}/bin"
 
 # Install github-release.
@@ -111,8 +113,6 @@ case "$(uname)" in
 esac
 
 popd
-
-export PATH="${HOME}/depot_tools:${HOME}/bin:$PATH"
 
 ###### START EDIT ######
 git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NAME}" "${TARGET_REPO_NAME}"
