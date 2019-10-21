@@ -26,24 +26,18 @@ case "$(uname)" in
 "Linux")
   GH_RELEASE_TOOL_ARCH="linux_amd64"
   BUILD_PLATFORM="Linux_x64"
-  PYTHON=("python")
   ;;
 
 "Darwin")
   GH_RELEASE_TOOL_ARCH="darwin_amd64"
   BUILD_PLATFORM="Mac_x64"
-  PYTHON=("python")
   brew install md5sha1sum
   ;;
 
 "MINGW"*)
   GH_RELEASE_TOOL_ARCH="windows_amd64"
   BUILD_PLATFORM="Windows_x64"
-  PYTHON=("py" "-2")
   choco install zip
-
-  # Needed for depot_tools on Windows.
-  export DEPOT_TOOLS_WIN_TOOLCHAIN=0
   ;;
 
 *)
@@ -89,9 +83,33 @@ popd
 
 # Install depot_tools.
 pushd "${HOME}"
-git clone https://chromium.googlesource.com/chromium/tools/depot_tools
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 cd depot_tools
 git checkout 77780358011f8e20c68ba10aa1282f1f9f65734f
+
+case "$(uname)" in
+"Linux")
+  gclient
+  ;;
+
+"Darwin")
+  gclient
+  ;;
+
+"MINGW"*)
+  # Needed for depot_tools on Windows.
+  export DEPOT_TOOLS_WIN_TOOLCHAIN=0
+  cmd.exe /C gclient
+  # TODO: Could remove.
+  command -v python
+  ;;
+
+*)
+  echo "Unknown OS"
+  exit 1
+  ;;
+esac
+
 popd
 
 export PATH="${HOME}/depot_tools:${HOME}/bin:$PATH"
@@ -101,7 +119,7 @@ git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NA
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
-"${PYTHON[@]}" scripts/bootstrap.py
+python scripts/bootstrap.py
 gclient sync
 ###### END EDIT ######
 
@@ -111,7 +129,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-gn gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=true"
+gn gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=true angle_enable_metal=false"
 autoninja -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator
 ###### END BUILD ######
 
