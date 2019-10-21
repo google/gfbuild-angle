@@ -107,9 +107,6 @@ case "$(uname)" in
   # So we use -o to overwrite with no prompts.
   unzip -o -d ./depot_tools/ ./depot_tools.zip
   cmd.exe /C gclient
-  command -v python
-  ls
-  ls depot_tools
   ;;
 
 *)
@@ -125,8 +122,31 @@ git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NA
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
-python scripts/bootstrap.py
-gclient sync
+
+case "$(uname)" in
+"Linux")
+  CMD_PREFIX=""
+  ;;
+
+"Darwin")
+  CMD_PREFIX=""
+  ;;
+
+"MINGW"*)
+  CMD_PREFIX="cmd.exe /C"
+  ;;
+
+*)
+  echo "Unknown OS"
+  exit 1
+  ;;
+esac
+
+# shellcheck disable=SC2086
+${CMD_PREFIX}python scripts/bootstrap.py
+# shellcheck disable=SC2086
+${CMD_PREFIX}gclient sync
+
 ###### END EDIT ######
 
 ###### BEGIN BUILD ######
@@ -135,8 +155,10 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-gn gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false"
-autoninja -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator
+# shellcheck disable=SC2086
+${CMD_PREFIX}gn gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false"
+# shellcheck disable=SC2086
+${CMD_PREFIX}autoninja -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator
 ###### END BUILD ######
 
 ###### START EDIT ######
