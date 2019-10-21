@@ -133,7 +133,7 @@ case "$(uname)" in
   ;;
 
 "MINGW"*)
-  CMD_PREFIX="cmd.exe /C"
+  CMD_PREFIX="cmd.exe /C "
   ;;
 
 *)
