@@ -107,6 +107,9 @@ case "$(uname)" in
   # So we use -o to overwrite with no prompts.
   unzip -o -d ./depot_tools/ ./depot_tools.zip
   cmd.exe /C gclient
+  command -v python
+  ls
+  ls depot_tools
   ;;
 
 *)
