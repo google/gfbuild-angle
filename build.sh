@@ -129,9 +129,11 @@ git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NA
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
-
+ls /c/ProgramData/Chocolatey/bin || true
 python.exe scripts/bootstrap.py
-gclient.bat sync
+ls /c/ProgramData/Chocolatey/bin || true
+gclient.bat sync --verbose
+ls /c/ProgramData/Chocolatey/bin || true
 
 ###### END EDIT ######
 
@@ -142,6 +144,7 @@ if test "${CONFIG}" = "Debug"; then
 fi
 
 gn.bat gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false"
+ls /c/ProgramData/Chocolatey/bin || true
 autoninja.bat -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator
 ###### END BUILD ######
 
