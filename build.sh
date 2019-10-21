@@ -103,7 +103,7 @@ case "$(uname)" in
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
   curl -fsSL -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
-  unzip -d depot_tools depot_tools.zip
+  unzip -d ./depot_tools/ ./depot_tools.zip
   cmd.exe /C gclient
   ;;
 
