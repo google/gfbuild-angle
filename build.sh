@@ -85,22 +85,29 @@ popd
 
 # Install depot_tools.
 pushd "${HOME}"
+
+DEPOT_TOOLS_HASH=77780358011f8e20c68ba10aa1282f1f9f65734f
+
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 cd depot_tools
-git checkout 77780358011f8e20c68ba10aa1282f1f9f65734f
+git checkout "${DEPOT_TOOLS_HASH}"
 
 case "$(uname)" in
 "Linux")
+  ENABLE_VULKAN="true"
   gclient
   ;;
 
 "Darwin")
+  ENABLE_VULKAN="false"
   gclient
   ;;
 
 "MINGW"*)
+  ENABLE_VULKAN="true"
   # Needed for depot_tools on Windows.
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
+  echo 'py -2 %*' >"${HOME}/bin/python.bat"
   cmd.exe /C gclient
   # TODO: Could remove.
   command -v python
@@ -129,7 +136,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-gn gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=true angle_enable_metal=false"
+gn gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false"
 autoninja -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator
 ###### END BUILD ######
 
