@@ -106,6 +106,12 @@ case "$(uname)" in
   # For some reason, extracting ninja is seen as "overwriting" another file on Windows (probably ninja.exe).
   # So we use -o to overwrite with no prompts.
   unzip -o -d ./depot_tools/ ./depot_tools.zip
+  PY2PATH_WIN="$(py -2 -c 'import os;import sys;print(os.path.dirname(sys.executable))')"
+  PY2PATH_UNIX="$(cygpath "${PY2PATH_WIN}")"
+  export PATH="${PY2PATH_UNIX}:${PATH}"
+  # TODO: Could remove.
+  command -v python
+
   cmd.exe /C gclient
   ;;
 
