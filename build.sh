@@ -86,32 +86,25 @@ popd
 # Install depot_tools.
 pushd "${HOME}"
 
-DEPOT_TOOLS_HASH=77780358011f8e20c68ba10aa1282f1f9f65734f
-
-git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-cd depot_tools
-git checkout "${DEPOT_TOOLS_HASH}"
-
 case "$(uname)" in
 "Linux")
   ENABLE_VULKAN="true"
-  gclient
+  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
   ;;
 
 "Darwin")
   ENABLE_VULKAN="false"
-  gclient
+  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
   ;;
 
 "MINGW"*)
   ENABLE_VULKAN="true"
   # Needed for depot_tools on Windows.
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
-  PY2PATH_WIN="$(py -2 -c 'import os;import sys;print(os.path.dirname(sys.executable))')"
-  PY2PATH_UNIX="$(cygpath "${PY2PATH_WIN}")"
-  export PATH="${PY2PATH_UNIX}:${PATH}"
-  # TODO: Could remove.
-  command -v python
+
+  curl -fsSL -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
+  unzip -d depot_tools
+  cmd.exe /C gclient
   ;;
 
 *)
