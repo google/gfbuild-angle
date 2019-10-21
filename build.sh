@@ -38,6 +38,7 @@ case "$(uname)" in
   GH_RELEASE_TOOL_ARCH="windows_amd64"
   BUILD_PLATFORM="Windows_x64"
   choco install zip
+  choco uninstall python
   ;;
 
 *)
