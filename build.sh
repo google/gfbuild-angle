@@ -51,6 +51,8 @@ TARGET_REPO_ORG="angle"
 TARGET_REPO_NAME="angle"
 BUILD_REPO_ORG="google"
 BUILD_REPO_NAME="gfbuild-angle"
+
+# build.yml provides: BACKEND
 ###### END EDIT ######
 
 COMMIT_ID="$(cat "${WORK}/COMMIT_ID")"
@@ -62,7 +64,7 @@ GROUP_SLASHES="github/${BUILD_REPO_ORG}"
 TAG="${GROUP_SLASHES}/${ARTIFACT}/${ARTIFACT_VERSION}"
 
 BUILD_REPO_SHA="${GITHUB_SHA}"
-CLASSIFIER="${BUILD_PLATFORM}_${CONFIG}"
+CLASSIFIER="${BUILD_PLATFORM}_${CONFIG}_${BACKEND}"
 POM_FILE="${BUILD_REPO_NAME}-${ARTIFACT_VERSION}.pom"
 INSTALL_DIR="${ARTIFACT}-${ARTIFACT_VERSION}-${CLASSIFIER}"
 
@@ -88,28 +90,40 @@ pushd "${HOME}"
 
 case "$(uname)" in
 "Linux")
-  ENABLE_VULKAN="true"
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  export PATH="${HOME}/depot_tools:${PATH}"
   ;;
 
 "Darwin")
-  ENABLE_VULKAN="false"
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  export PATH="${HOME}/depot_tools:${PATH}"
   ;;
 
 "MINGW"*)
-  ENABLE_VULKAN="true"
   # Needed for depot_tools on Windows.
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
-
   curl -fsSL -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
-  # For some reason, unzip says we will "overwrite" a file. So we use 7z.
+  # For some reason, unzip says we will "overwrite" some files (e.g. ninja will overwrite ninja.exe). So we use 7z.
   7z x depot_tools.zip -odepot_tools
-  ls depot_tools
+
+  # On Windows, we have to run gclient.bat at least once (with no arguments), which downloads python.bat (and other
+  # tools) to depot_tools.
+  # There are very weird issues with depot_tools on Windows if python, python27, ninja (and maybe others) are found
+  # on your PATH; they can somehow end up getting used instead of the depot_tools versions.
+  # To solve this, we remove elements from our PATH until these tools cannot be found.
+
+  # We will restore the PATH later so we can use `zip`.
+  OLD_PATH="${PATH}"
+
+  # Removes elements from PATH until the given tools can no longer be found.
   NEW_PATH=$(python "${WORK}/remove_from_path.py" python python2 python27 python3 pip pip3 ninja cmake gcc)
-  NEW_PATH_UNIX="$(cygpath -u -p "${NEW_PATH}")"
-  PATH="${NEW_PATH_UNIX}"
-  export PATH
+  # Convert our path list (-p) to UNIX form (-u) since we are using bash.
+  NEW_PATH_UNIX="$(cygpath -p -u "${NEW_PATH}")"
+  export PATH="${NEW_PATH_UNIX}"
+
+  gclient.bat
+
+  export PATH="${HOME}/depot_tools:${PATH}"
   ;;
 
 *)
@@ -119,17 +133,26 @@ case "$(uname)" in
 esac
 
 popd
-export PATH="${HOME}/depot_tools:${PATH}"
+
+###### START EDIT ######
+git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NAME}" "${TARGET_REPO_NAME}"
+cd "${TARGET_REPO_NAME}"
+git checkout "${COMMIT_ID}"
 
 case "$(uname)" in
 "Linux")
+  python scripts/bootstrap.py
+  gclient sync
   ;;
 
 "Darwin")
+  python scripts/bootstrap.py
+  gclient sync
   ;;
 
 "MINGW"*)
-  gclient.bat
+  python.bat scripts/bootstrap.py
+  gclient.bat sync
   ;;
 
 *)
@@ -137,14 +160,6 @@ case "$(uname)" in
   exit 1
   ;;
 esac
-
-###### START EDIT ######
-git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NAME}" "${TARGET_REPO_NAME}"
-cd "${TARGET_REPO_NAME}"
-git checkout "${COMMIT_ID}"
-
-python.bat scripts/bootstrap.py
-gclient.bat sync
 
 ###### END EDIT ######
 
@@ -154,22 +169,38 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-gn.bat gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false angle_swiftshader=false"
-command -v ninja || true
-command -v ninja.exe || true
-command -v ninja.bat || true
+GEN_ARGS="--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=true angle_enable_hlsl=true angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_gl=false angle_enable_null=false angle_enable_metal=false angle_swiftshader=false"
+TARGETS=(libEGL libGLESv2 libGLESv1_CM shader_translator)
 
-autoninja.bat -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator || true
+case "$(uname)" in
+"Linux")
+  gn gen "out/${CONFIG}" "${GEN_ARGS}"
+  autoninja -C "out/${CONFIG}" "${TARGETS[@]}"
+  ;;
 
-echo ...
+"Darwin")
+  gn gen "out/${CONFIG}" "${GEN_ARGS}"
+  autoninja -C "out/${CONFIG}" "${TARGETS[@]}"
+  ;;
 
-ninja.exe -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator || true
+"MINGW"*)
+  gn.bat gen "out/${CONFIG}" "${GEN_ARGS}"
+  autoninja.bat -C "out/${CONFIG}" "${TARGETS[@]}"
+  ;;
+
+*)
+  echo "Unknown OS"
+  exit 1
+  ;;
+esac
 
 ###### END BUILD ######
 
 ###### START EDIT ######
 
 # There are no install steps in the ANGLE build, so copy files manually.
+
+ls "out/${CONFIG}/"
 
 mkdir -p "${INSTALL_DIR}/bin"
 mkdir -p "${INSTALL_DIR}/lib"
@@ -178,10 +209,32 @@ cp "out/${CONFIG}/libEGL"* "${INSTALL_DIR}/lib/"
 cp "out/${CONFIG}/libGLES"* "${INSTALL_DIR}/lib/"
 cp "out/${CONFIG}/shader_translator"* "${INSTALL_DIR}/bin/"
 
+# On Windows...
+case "$(uname)" in
+"Linux")
+  ;;
+
+"Darwin")
+  ;;
+
+"MINGW"*)
+  # Remove .lib files.
+  rm "${INSTALL_DIR}/lib/"*.lib
+  # Restore PATH.
+  export PATH="${OLD_PATH}"
+  ;;
+
+*)
+  echo "Unknown OS"
+  exit 1
+  ;;
+esac
+
 for f in "${INSTALL_DIR}/bin/"* "${INSTALL_DIR}/lib/"*; do
   echo "${BUILD_REPO_SHA}">"${f}.build-version"
   cp "${WORK}/COMMIT_ID" "${f}.version"
 done
+
 
 ###### END EDIT ######
 

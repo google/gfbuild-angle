@@ -28,15 +28,19 @@ jobs:
       fail-fast: false
       matrix:
         os:
-#          - ubuntu-16.04
+          - ubuntu-16.04
           - windows-2016
+          # TODO: Fix build for MacOS Vulkan backend. Change number of assets in update.sh.
 #          - macOS-10.14
         config:
           - Debug
-#          - Release
+          - Release
+        backend:
+          - Vulkan
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}
+      BACKEND: ${{ matrix.backend }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
       - name: checkout
