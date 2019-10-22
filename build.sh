@@ -121,9 +121,10 @@ case "$(uname)" in
   NEW_PATH_UNIX="$(cygpath -p -u "${NEW_PATH}")"
   export PATH="${NEW_PATH_UNIX}"
 
+  export PATH="${HOME}/depot_tools:${PATH}"
+
   gclient.bat
 
-  export PATH="${HOME}/depot_tools:${PATH}"
   ;;
 
 *)

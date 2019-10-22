@@ -24,11 +24,11 @@ on:
 jobs:
   build:
     strategy:
-      # TODO: remove.
+      # TODO: remove. Enable ubuntu.
       fail-fast: false
       matrix:
         os:
-          - ubuntu-16.04
+#          - ubuntu-16.04
           - windows-2016
           # TODO: Fix build for MacOS Vulkan backend. Change number of assets in update.sh.
 #          - macOS-10.14

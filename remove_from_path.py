@@ -50,7 +50,7 @@ def main():
             if limit <= 0:
                 print("loop limit")
                 sys.exit(1)
-            log("Path: " + os.pathsep.join(elements))
+
             log("Has command_path: " + command_path)
 
             for i in range(len(elements)):
