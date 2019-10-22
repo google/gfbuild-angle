@@ -110,8 +110,6 @@ case "$(uname)" in
   NEW_PATH_UNIX="$(cygpath -u -p "${NEW_PATH}")"
   PATH="${NEW_PATH_UNIX}"
   export PATH
-
-  gclient.bat
   ;;
 
 *)
