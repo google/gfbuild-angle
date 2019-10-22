@@ -143,7 +143,8 @@ git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NA
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
-python.exe scripts/bootstrap.py
+command -v python || true
+python scripts/bootstrap.py
 gclient.bat sync
 
 ###### END EDIT ######
