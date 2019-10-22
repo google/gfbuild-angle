@@ -123,6 +123,23 @@ esac
 popd
 export PATH="${HOME}/depot_tools:${PATH}"
 
+case "$(uname)" in
+"Linux")
+  ;;
+
+"Darwin")
+  ;;
+
+"MINGW"*)
+  gclient.bat
+  ;;
+
+*)
+  echo "Unknown OS"
+  exit 1
+  ;;
+esac
+
 ###### START EDIT ######
 git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NAME}" "${TARGET_REPO_NAME}"
 cd "${TARGET_REPO_NAME}"
