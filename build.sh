@@ -106,7 +106,7 @@ case "$(uname)" in
   # For some reason, unzip says we will "overwrite" a file. So we use 7z.
   7z x depot_tools.zip -odepot_tools
   ls depot_tools
-  NEW_PATH=$(python "${WORK}/remove_from_path.py" python python2 python27 python3 pip pip3 ninja Ninja cmake CMake gcc)
+  NEW_PATH=$(python "${WORK}/remove_from_path.py" python python2 python27 python3 pip pip3 ninja cmake gcc)
   NEW_PATH_UNIX="$(cygpath -u -p "${NEW_PATH}")"
   PATH="${NEW_PATH_UNIX}"
   export PATH
