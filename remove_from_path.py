@@ -40,7 +40,7 @@ def main():
 
     limit = 10000
 
-    for command in sys.argv:
+    for command in sys.argv[1:]:
         log("Considering " + command)
         command_path = shutil.which(command, path=os.pathsep.join(elements))
         while command_path:
@@ -50,8 +50,9 @@ def main():
             if limit <= 0:
                 print("loop limit")
                 sys.exit(1)
-
+            log("Path: " + os.pathsep.join(elements))
             log("Has command_path: " + command_path)
+
             for i in range(len(elements)):
                 new_elements = elements[:i] + elements[i+1:]
                 new_command_path = shutil.which(command, path=os.pathsep.join(new_elements))
