@@ -107,15 +107,23 @@ case "$(uname)" in
   # For some reason, extracting ninja is seen as "overwriting" another file on Windows (probably ninja.exe).
   # So we use -o to overwrite with no prompts.
   unzip -o -d ./depot_tools/ ./depot_tools.zip
+  ls depot_tools
+  command -v ninja || true
+  command -v ninja.exe || true
+  command -v ninja.bat || true
   PY2PATH_WIN="$(py -2 -c 'import os;import sys;print(os.path.dirname(sys.executable))')"
   PY2PATH_UNIX="$(cygpath "${PY2PATH_WIN}")"
   export PATH="${PY2PATH_UNIX}:${PATH}"
   # TODO: Could remove.
-  command -v python
+  command -v python || true
   command -v python.bat || true
   ls /c/ProgramData/Chocolatey/bin || true
   rm /c/ProgramData/Chocolatey/bin/python*
   ls /c/ProgramData/Chocolatey/bin || true
+  command -v python2 || true
+  command -v python2.bat || true
+  command -v python27 || true
+  command -v python27.bat || true
 
   gclient.bat
   ;;
@@ -146,7 +154,11 @@ if test "${CONFIG}" = "Debug"; then
 fi
 
 gn.bat gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false"
-autoninja.bat -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator
+command -v ninja || true
+command -v ninja.exe || true
+command -v ninja.bat || true
+autoninja.bat -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator || true
+ninja.exe -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator || true
 ###### END BUILD ######
 
 ###### START EDIT ######
