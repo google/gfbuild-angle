@@ -170,7 +170,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-GEN_ARGS="--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" is_clang=false angle_enable_vulkan=true angle_enable_hlsl=true angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_gl=false angle_enable_null=false angle_enable_metal=false angle_swiftshader=false"
+GEN_ARGS="--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" is_clang=false angle_enable_vulkan=true angle_enable_hlsl=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_gl=false angle_enable_null=false angle_enable_metal=false angle_swiftshader=false"
 TARGETS=(libEGL libGLESv2 libGLESv1_CM shader_translator)
 
 case "$(uname)" in
