@@ -19,15 +19,48 @@ import sys
 import shutil
 from typing import List
 
-path = os.environ["PATH"].split(os.pathsep)  # type: List[str]
-for command in sys.argv:
-    command_path = shutil.which(command, path=os.pathsep.join(path))
-    while command_path:
-        for i in range(len(path)):
-            new_path = path[:i] + path[i+1:]
-            new_command_path = shutil.which(command, path=os.pathsep.join(new_path))
-            if new_command_path != command_path:
-                path = new_path
-                command_path = new_command_path
-                break
-print(os.pathsep.join(path))
+
+def log(s):
+    print(s, file=sys.stderr, flush=True)
+
+
+def remove_duplicates(elements):
+    seen_elements = set()
+    new_elements = []
+    for element in elements:
+        if element not in seen_elements:
+            new_elements.append(element)
+            seen_elements.add(element)
+    return new_elements
+
+
+def main():
+    elements = os.environ["PATH"].split(os.pathsep)  # type: List[str]
+    elements = remove_duplicates(elements)
+
+    limit = 10000
+
+    for command in sys.argv:
+        log("Considering " + command)
+        command_path = shutil.which(command, path=os.pathsep.join(elements))
+        while command_path:
+
+            # Don't loop forever.
+            limit -= 1
+            if limit <= 0:
+                print("loop limit")
+                sys.exit(1)
+
+            log("Has command_path: " + command_path)
+            for i in range(len(elements)):
+                new_elements = elements[:i] + elements[i+1:]
+                new_command_path = shutil.which(command, path=os.pathsep.join(new_elements))
+                if new_command_path != command_path:
+                    elements = new_elements
+                    command_path = new_command_path
+                    break
+    print(os.pathsep.join(elements))
+
+
+if __name__ == '__main__':
+    main()
