@@ -170,10 +170,10 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-# is_clang=false angle_enable_vulkan=true angle_enable_hlsl=false angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_gl=false angle_enable_null=false angle_enable_metal=false angle_swiftshader=false
+# Other args: is_clang=false angle_enable_vulkan=true angle_enable_hlsl=true angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_gl=false angle_enable_null=false angle_enable_metal=false angle_swiftshader=false
 GEN_ARGS="--args=is_debug=${IS_DEBUG} target_cpu=\"x64\""
 
-# libEGL libGLESv2 libGLESv1_CM
+# Other targets: libEGL libGLESv2 libGLESv1_CM
 TARGETS=(shader_translator)
 
 case "$(uname)" in
@@ -210,10 +210,10 @@ esac
 ls "out/${CONFIG}/"
 
 mkdir -p "${INSTALL_DIR}/bin"
-mkdir -p "${INSTALL_DIR}/lib"
+# mkdir -p "${INSTALL_DIR}/lib"
 
-cp "out/${CONFIG}/libEGL"* "${INSTALL_DIR}/lib/"
-cp "out/${CONFIG}/libGLES"* "${INSTALL_DIR}/lib/"
+# cp "out/${CONFIG}/libEGL"* "${INSTALL_DIR}/lib/"
+# cp "out/${CONFIG}/libGLES"* "${INSTALL_DIR}/lib/"
 cp "out/${CONFIG}/shader_translator"* "${INSTALL_DIR}/bin/"
 
 # On Windows...
@@ -226,7 +226,7 @@ case "$(uname)" in
 
 "MINGW"*)
   # Remove .lib files.
-  rm "${INSTALL_DIR}/lib/"*.lib
+  # rm "${INSTALL_DIR}/lib/"*.lib
   # Restore PATH.
   export PATH="${OLD_PATH}"
   ;;
@@ -237,7 +237,8 @@ case "$(uname)" in
   ;;
 esac
 
-for f in "${INSTALL_DIR}/bin/"* "${INSTALL_DIR}/lib/"*; do
+# TODO: re-add: "${INSTALL_DIR}/lib/"*
+for f in "${INSTALL_DIR}/bin/"*; do
   echo "${BUILD_REPO_SHA}">"${f}.build-version"
   cp "${WORK}/COMMIT_ID" "${f}.version"
 done

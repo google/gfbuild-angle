@@ -24,19 +24,20 @@ on:
 jobs:
   build:
     strategy:
-      # TODO: remove. Enable ubuntu.
+      # TODO: remove.
       fail-fast: false
       matrix:
         os:
-#          - ubuntu-16.04
-          - windows-2016
-          # TODO: Fix build for MacOS Vulkan backend. Change number of assets in update.sh.
-#          - macOS-10.14
+         - ubuntu-16.04
+         - windows-2016
+         - macOS-10.14
         config:
           - Debug
           - Release
         backend:
-          - Vulkan
+          # Just build the translator without messing with the backend options.
+          - Translator
+          # TODO: Other backends maybe.
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}
