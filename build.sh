@@ -38,7 +38,6 @@ case "$(uname)" in
   GH_RELEASE_TOOL_ARCH="windows_amd64"
   BUILD_PLATFORM="Windows_x64"
   choco install zip
-  choco list --local-only
   ;;
 
 *)
@@ -72,7 +71,7 @@ GH_RELEASE_TOOL_VERSION="v1.1.0"
 
 mkdir -p "${HOME}/bin"
 
-export PATH="${HOME}/depot_tools:${HOME}/bin:$PATH"
+export PATH="${HOME}/bin:$PATH"
 
 pushd "${HOME}/bin"
 
@@ -104,26 +103,14 @@ case "$(uname)" in
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
   curl -fsSL -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
-  # For some reason, extracting ninja is seen as "overwriting" another file on Windows (probably ninja.exe).
-  # So we use -o to overwrite with no prompts.
-  unzip -o -d ./depot_tools/ ./depot_tools.zip
+  # For some reason, unzip says we will "overwrite" a file. So we use 7z.
+  7z x depot_tools.zip -odepot_tools
   ls depot_tools
-  command -v ninja || true
-  command -v ninja.exe || true
-  command -v ninja.bat || true
-  PY2PATH_WIN="$(py -2 -c 'import os;import sys;print(os.path.dirname(sys.executable))')"
-  PY2PATH_UNIX="$(cygpath "${PY2PATH_WIN}")"
-  export PATH="${PY2PATH_UNIX}:${PATH}"
-  # TODO: Could remove.
-  command -v python || true
-  command -v python.bat || true
-  ls /c/ProgramData/Chocolatey/bin || true
-  rm /c/ProgramData/Chocolatey/bin/python*
-  ls /c/ProgramData/Chocolatey/bin || true
-  command -v python2 || true
-  command -v python2.bat || true
-  command -v python27 || true
-  command -v python27.bat || true
+
+  NEW_PATH=$(python "${WORK}/remove_from_path.py" python python2 python27 python3 pip pip3 ninja Ninja cmake CMake gcc)
+  NEW_PATH_UNIX="$(cygpath -u -p "${NEW_PATH}")"
+  PATH="${NEW_PATH_UNIX}"
+  export PATH
 
   gclient.bat
   ;;
@@ -135,15 +122,15 @@ case "$(uname)" in
 esac
 
 popd
+export PATH="${HOME}/depot_tools:${PATH}"
 
 ###### START EDIT ######
 git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NAME}" "${TARGET_REPO_NAME}"
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
-
 python.exe scripts/bootstrap.py
-gclient.bat sync --verbose
+gclient.bat sync
 
 ###### END EDIT ######
 
@@ -157,8 +144,13 @@ gn.bat gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle
 command -v ninja || true
 command -v ninja.exe || true
 command -v ninja.bat || true
+
 autoninja.bat -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator || true
+
+echo ...
+
 ninja.exe -C "out/${CONFIG}" libEGL libGLESv2 libGLESv1_CM shader_translator || true
+
 ###### END BUILD ######
 
 ###### START EDIT ######
