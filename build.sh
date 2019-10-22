@@ -154,7 +154,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-gn.bat gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false"
+gn.bat gen "out/${CONFIG}" "--args=is_debug=${IS_DEBUG} target_cpu=\"x64\" angle_enable_vulkan=${ENABLE_VULKAN} angle_enable_metal=false angle_swiftshader=false"
 command -v ninja || true
 command -v ninja.exe || true
 command -v ninja.bat || true
