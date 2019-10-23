@@ -18,14 +18,12 @@ on:
     branches:
       - 'master'
       - 'test*'
-#    paths:
-#      - 'COMMIT_ID'
+    paths:
+      - 'COMMIT_ID'
 
 jobs:
   build:
     strategy:
-      # TODO: remove.
-      fail-fast: false
       matrix:
         os:
          - ubuntu-16.04
