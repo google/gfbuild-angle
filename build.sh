@@ -174,7 +174,7 @@ fi
 GEN_ARGS="--args=is_debug=${IS_DEBUG} target_cpu=\"x64\""
 
 # Other targets: libEGL libGLESv2 libGLESv1_CM
-TARGETS=(shader_translator)
+TARGETS=(angle_shader_translator)
 
 case "$(uname)" in
 "Linux")
@@ -214,7 +214,7 @@ mkdir -p "${INSTALL_DIR}/bin"
 
 # cp "out/${CONFIG}/libEGL"* "${INSTALL_DIR}/lib/"
 # cp "out/${CONFIG}/libGLES"* "${INSTALL_DIR}/lib/"
-cp "out/${CONFIG}/shader_translator"* "${INSTALL_DIR}/bin/"
+cp "out/${CONFIG}/angle_shader_translator"* "${INSTALL_DIR}/bin/"
 
 # On Windows...
 case "$(uname)" in
