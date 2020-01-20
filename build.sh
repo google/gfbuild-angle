@@ -20,6 +20,8 @@ set -u
 
 WORK="$(pwd)"
 
+help | head
+
 uname
 
 case "$(uname)" in
@@ -34,7 +36,7 @@ case "$(uname)" in
   brew install md5sha1sum
   ;;
 
-"MINGW"*)
+"MINGW"*|"MSYS_NT"*)
   GH_RELEASE_TOOL_ARCH="windows_amd64"
   BUILD_PLATFORM="Windows_x64"
   choco install zip

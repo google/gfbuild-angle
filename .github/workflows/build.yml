@@ -19,7 +19,7 @@ on:
       - 'master'
       - 'test*'
     paths:
-      - 'COMMIT_ID'
+      #- 'COMMIT_ID'
 
 jobs:
   build:
@@ -27,11 +27,11 @@ jobs:
       matrix:
         os:
          - ubuntu-16.04
-         - windows-2016
-         - macOS-10.14
+         - windows-latest
+         - macOS-latest
         config:
           - Debug
-          - Release
+          #- Release
         backend:
           # Just build the translator without messing with the backend options.
           - Translator
@@ -55,7 +55,7 @@ jobs:
           !startsWith(matrix.os, 'windows')
       - name: build_step_windows
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
           "C:\Program Files\Git\bin\bash.EXE" --noprofile --norc -e -o pipefail build.sh
         shell: cmd
         if: |
