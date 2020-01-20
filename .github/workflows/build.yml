@@ -19,7 +19,7 @@ on:
       - 'master'
       - 'test*'
     paths:
-      #- 'COMMIT_ID'
+      - 'COMMIT_ID'
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
          - macOS-latest
         config:
           - Debug
-          #- Release
+          - Release
         backend:
           # Just build the translator without messing with the backend options.
           - Translator
