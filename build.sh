@@ -101,7 +101,7 @@ case "$(uname)" in
   export PATH="${HOME}/depot_tools:${PATH}"
   ;;
 
-"MINGW"*)
+"MINGW"*|"MSYS_NT"*)
   # Needed for depot_tools on Windows.
   export DEPOT_TOOLS_WIN_TOOLCHAIN=0
   curl -fsSL -o depot_tools.zip https://storage.googleapis.com/chrome-infra/depot_tools.zip
@@ -153,7 +153,7 @@ case "$(uname)" in
   gclient sync
   ;;
 
-"MINGW"*)
+"MINGW"*|"MSYS_NT"*)
   python.bat scripts/bootstrap.py
   gclient.bat sync
   ;;
@@ -191,7 +191,7 @@ case "$(uname)" in
   autoninja -C "out/${CONFIG}" "${TARGETS[@]}"
   ;;
 
-"MINGW"*)
+"MINGW"*|"MSYS_NT"*)
   gn.bat gen "out/${CONFIG}" "${GEN_ARGS}"
   cat "out/${CONFIG}/args.gn"
   autoninja.bat -C "out/${CONFIG}" "${TARGETS[@]}"
@@ -226,7 +226,7 @@ case "$(uname)" in
 "Darwin")
   ;;
 
-"MINGW"*)
+"MINGW"*|"MSYS_NT"*)
   # Remove .lib files.
   # rm "${INSTALL_DIR}/lib/"*.lib
   # Restore PATH.
