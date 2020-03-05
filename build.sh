@@ -26,18 +26,15 @@ uname
 
 case "$(uname)" in
 "Linux")
-  GH_RELEASE_TOOL_ARCH="linux_amd64"
   BUILD_PLATFORM="Linux_x64"
   ;;
 
 "Darwin")
-  GH_RELEASE_TOOL_ARCH="darwin_amd64"
   BUILD_PLATFORM="Mac_x64"
   brew install md5sha1sum
   ;;
 
 "MINGW"*|"MSYS_NT"*)
-  GH_RELEASE_TOOL_ARCH="windows_amd64"
   BUILD_PLATFORM="Windows_x64"
   choco install zip
   ;;
@@ -70,18 +67,14 @@ CLASSIFIER="${BUILD_PLATFORM}_${CONFIG}_${BACKEND}"
 POM_FILE="${BUILD_REPO_NAME}-${ARTIFACT_VERSION}.pom"
 INSTALL_DIR="${ARTIFACT}-${ARTIFACT_VERSION}-${CLASSIFIER}"
 
-GH_RELEASE_TOOL_USER="c4milo"
-GH_RELEASE_TOOL_VERSION="v1.1.0"
-
 mkdir -p "${HOME}/bin"
 
 export PATH="${HOME}/bin:$PATH"
 
 pushd "${HOME}/bin"
 
-# Install github-release.
-curl -fsSL -o github-release.tar.gz "https://github.com/${GH_RELEASE_TOOL_USER}/github-release/releases/download/${GH_RELEASE_TOOL_VERSION}/github-release_${GH_RELEASE_TOOL_VERSION}_${GH_RELEASE_TOOL_ARCH}.tar.gz"
-tar xf github-release.tar.gz
+# Install github-release-retry.
+"${PYTHON}" -m pip install --user 'github-release-retry==1.*'
 
 ls
 
@@ -277,44 +270,49 @@ fi
 
 # We do not use the GITHUB_TOKEN provided by GitHub Actions.
 # We cannot set enviroment variables or secrets that start with GITHUB_ in .yml files,
-# but the github-release tool requires GITHUB_TOKEN, so we set it here.
+# but the github-release-retry tool requires GITHUB_TOKEN, so we set it here.
 export GITHUB_TOKEN="${GH_TOKEN}"
 
-github-release \
-  "${BUILD_REPO_ORG}/${BUILD_REPO_NAME}" \
-  "${TAG}" \
-  "${BUILD_REPO_SHA}" \
-  "${DESCRIPTION}" \
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
   "${INSTALL_DIR}.zip"
 
-github-release \
-  "${BUILD_REPO_ORG}/${BUILD_REPO_NAME}" \
-  "${TAG}" \
-  "${BUILD_REPO_SHA}" \
-  "${DESCRIPTION}" \
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
   "${INSTALL_DIR}.zip.sha1"
 
 # Don't fail if pom cannot be uploaded, as it might already be there.
 
-github-release \
-  "${BUILD_REPO_ORG}/${BUILD_REPO_NAME}" \
-  "${TAG}" \
-  "${BUILD_REPO_SHA}" \
-  "${DESCRIPTION}" \
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
   "${POM_FILE}" || true
 
-github-release \
-  "${BUILD_REPO_ORG}/${BUILD_REPO_NAME}" \
-  "${TAG}" \
-  "${BUILD_REPO_SHA}" \
-  "${DESCRIPTION}" \
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
   "${POM_FILE}.sha1" || true
 
 # Don't fail if OPEN_SOURCE_LICENSES.TXT cannot be uploaded, as it might already be there.
 
-github-release \
-  "${BUILD_REPO_ORG}/${BUILD_REPO_NAME}" \
-  "${TAG}" \
-  "${BUILD_REPO_SHA}" \
-  "${DESCRIPTION}" \
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
   "OPEN_SOURCE_LICENSES.TXT" || true
