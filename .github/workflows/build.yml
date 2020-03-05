@@ -42,17 +42,38 @@ jobs:
       BACKEND: ${{ matrix.backend }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
-      - name: checkout
+
+      - name: get_actions
         run: |
-          git clone https://github.com/${GITHUB_REPOSITORY}.git .
-          git checkout $GITHUB_SHA
+          mkdir -p ./../.github/actions/
+          pushd ./../.github/actions/
+            git clone https://github.com/actions/setup-python.git
+            pushd setup-python/
+              git checkout 28a6c1b915d5808acb3da49af7063544ebfbe085
+            popd
+            git clone https://github.com/actions/checkout.git
+            pushd checkout/
+              git checkout 722adc63f1aa60a57ec37892e133b1d319cae598
+            popd
+          popd
         shell: bash
+
+      - name: checkout
+        uses: ./../.github/actions/checkout
+
+      - name: setup_python
+        uses: ./../.github/actions/setup-python
+        with:
+          python-version: 3.6
+          architecture: x64
+
       - name: build_step_nix
         run: |
           ./build.sh
         shell: bash
         if: |
           !startsWith(matrix.os, 'windows')
+
       - name: build_step_windows
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
