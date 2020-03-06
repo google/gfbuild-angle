@@ -27,15 +27,18 @@ uname
 case "$(uname)" in
 "Linux")
   BUILD_PLATFORM="Linux_x64"
+  PYTHON="python3"
   ;;
 
 "Darwin")
   BUILD_PLATFORM="Mac_x64"
+  PYTHON="python3"
   brew install md5sha1sum
   ;;
 
 "MINGW"*|"MSYS_NT"*)
   BUILD_PLATFORM="Windows_x64"
+  PYTHON="python"
   choco install zip
   ;;
 
