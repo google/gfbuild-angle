@@ -24,6 +24,10 @@ help | head
 
 uname
 
+ls "${RUNNER_TOOL_CACHE}/Python"
+ls "${RUNNER_TOOL_CACHE}/Python/3.6.8/x64"
+ls "${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/*"
+
 case "$(uname)" in
 "Linux")
   BUILD_PLATFORM="Linux_x64"
