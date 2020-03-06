@@ -36,7 +36,7 @@ jobs:
           # Just build the translator without messing with the backend options.
           - Translator
           # TODO: Other backends maybe.
-    fail-fast: false  # TODO: Remove.
+      fail-fast: false  # TODO: Remove.
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}
