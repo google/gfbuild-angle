@@ -86,6 +86,8 @@ popd
 # Install depot_tools.
 pushd "${HOME}"
 
+export GCLIENT_PY3=1
+
 case "$(uname)" in
 "Linux")
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -140,12 +142,12 @@ git checkout "${COMMIT_ID}"
 
 case "$(uname)" in
 "Linux")
-  python scripts/bootstrap.py
+  /usr/bin/python scripts/bootstrap.py
   gclient sync
   ;;
 
 "Darwin")
-  python scripts/bootstrap.py
+  /usr/bin/python scripts/bootstrap.py
   gclient sync
   ;;
 
