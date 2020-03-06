@@ -24,25 +24,24 @@ help | head
 
 uname
 
-ls "${RUNNER_TOOL_CACHE}/Python"
-ls "${RUNNER_TOOL_CACHE}/Python/3.6.8/x64"
-ls "${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/*"
+PYTHON_VERSIONS=("${RUNNER_TOOL_CACHE}/Python/3.6."*)
+
 
 case "$(uname)" in
 "Linux")
   BUILD_PLATFORM="Linux_x64"
-  PYTHON="${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/python"
+  PYTHON="${PYTHON_VERSIONS[0]}/x64/python"
   ;;
 
 "Darwin")
   BUILD_PLATFORM="Mac_x64"
-  PYTHON="${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/python"
+  PYTHON="${PYTHON_VERSIONS[0]}/x64/python"
   brew install md5sha1sum
   ;;
 
 "MINGW"*|"MSYS_NT"*)
   BUILD_PLATFORM="Windows_x64"
-  PYTHON="${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/python"
+  PYTHON="${PYTHON_VERSIONS[0]}/x64/python.exe"
   choco install zip
   ;;
 
