@@ -62,12 +62,6 @@ jobs:
       - name: checkout
         uses: ./../.github/actions/checkout
 
-      - name: setup_python
-        uses: ./../.github/actions/setup-python
-        with:
-          python-version: 3.6
-          architecture: x64
-
       - name: build_step_nix
         run: |
           ./build.sh

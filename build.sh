@@ -27,18 +27,18 @@ uname
 case "$(uname)" in
 "Linux")
   BUILD_PLATFORM="Linux_x64"
-  PYTHON="python3"
+  PYTHON="${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/python"
   ;;
 
 "Darwin")
   BUILD_PLATFORM="Mac_x64"
-  PYTHON="python3"
+  PYTHON="${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/python"
   brew install md5sha1sum
   ;;
 
 "MINGW"*|"MSYS_NT"*)
   BUILD_PLATFORM="Windows_x64"
-  PYTHON="python"
+  PYTHON="${RUNNER_TOOL_CACHE}/Python/3.6.8/x64/python"
   choco install zip
   ;;
 
@@ -85,8 +85,6 @@ popd
 
 # Install depot_tools.
 pushd "${HOME}"
-
-export GCLIENT_PY3=1
 
 case "$(uname)" in
 "Linux")
@@ -142,12 +140,12 @@ git checkout "${COMMIT_ID}"
 
 case "$(uname)" in
 "Linux")
-  /usr/bin/python scripts/bootstrap.py
+  python scripts/bootstrap.py
   gclient sync
   ;;
 
 "Darwin")
-  /usr/bin/python scripts/bootstrap.py
+  python scripts/bootstrap.py
   gclient sync
   ;;
 
