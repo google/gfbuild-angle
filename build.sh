@@ -161,22 +161,31 @@ solutions = [
 ]
 END
 
-# Remove large, unneeded dependencies from the DEPS file.
-python ../remove_some_deps.py
-
 case "$(uname)" in
 "Linux")
 #  python scripts/bootstrap.py
+
+  # Remove large, unneeded dependencies from the DEPS file.
+  python ../remove_some_deps.py
+
   gclient sync
   ;;
 
 "Darwin")
 #  python scripts/bootstrap.py
+
+  # Remove large, unneeded dependencies from the DEPS file.
+  python ../remove_some_deps.py
+
   gclient sync
   ;;
 
 "MINGW"*|"MSYS_NT"*)
 #  python.bat scripts/bootstrap.py
+
+  # Remove large, unneeded dependencies from the DEPS file.
+  python.bat ../remove_some_deps.py
+
   gclient.bat sync
   ;;
 
@@ -194,12 +203,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG} chrome_pgo_phase=0"
-
-if test "${IS_DEBUG}" = "false"; then
-  GEN_ARGS+=" is_official_build=true"
-fi
-
+GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG}"
 TARGETS=(angle angle_shader_translator)
 
 case "$(uname)" in
