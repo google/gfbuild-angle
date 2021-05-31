@@ -33,7 +33,7 @@ jobs:
         config:
           - Debug
           - Release
-        fail-fast: false
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}
