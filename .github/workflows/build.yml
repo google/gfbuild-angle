@@ -18,8 +18,8 @@ on:
     branches:
       - 'master'
       - 'test*'
-    paths:
-      - 'COMMIT_ID'
+#    paths:
+#      - 'COMMIT_ID'
   workflow_dispatch:
 
 jobs:
@@ -33,6 +33,7 @@ jobs:
         config:
           - Debug
           - Release
+        fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}

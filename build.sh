@@ -191,7 +191,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG}"
+GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG} chrome_pgo_phase=0"
 
 if test "${IS_DEBUG}" = "false"; then
   GEN_ARGS+=" is_official_build=true"
