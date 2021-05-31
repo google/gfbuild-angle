@@ -24,24 +24,21 @@ help | head
 
 uname
 
-PYTHON_VERSIONS=("${RUNNER_TOOL_CACHE}/Python/3.6."*)
-
-
 case "$(uname)" in
 "Linux")
   BUILD_PLATFORM="Linux_x64"
-  PYTHON="${PYTHON_VERSIONS[0]}/x64/python"
+  PYTHON="python3"
   ;;
 
 "Darwin")
   BUILD_PLATFORM="Mac_x64"
-  PYTHON="${PYTHON_VERSIONS[0]}/x64/python"
+  PYTHON="python3"
   brew install md5sha1sum
   ;;
 
 "MINGW"*|"MSYS_NT"*)
   BUILD_PLATFORM="Windows_x64"
-  PYTHON="${PYTHON_VERSIONS[0]}/x64/python.exe"
+  PYTHON="python"
   choco install zip
   ;;
 
@@ -56,8 +53,6 @@ TARGET_REPO_ORG="angle"
 TARGET_REPO_NAME="angle"
 BUILD_REPO_ORG="google"
 BUILD_REPO_NAME="gfbuild-angle"
-
-# build.yml provides: BACKEND
 ###### END EDIT ######
 
 COMMIT_ID="$(cat "${WORK}/COMMIT_ID")"
@@ -69,9 +64,10 @@ GROUP_SLASHES="github/${BUILD_REPO_ORG}"
 TAG="${GROUP_SLASHES}/${ARTIFACT}/${ARTIFACT_VERSION}"
 
 BUILD_REPO_SHA="${GITHUB_SHA}"
-CLASSIFIER="${BUILD_PLATFORM}_${CONFIG}_${BACKEND}"
+CLASSIFIER="${BUILD_PLATFORM}_${CONFIG}"
 POM_FILE="${BUILD_REPO_NAME}-${ARTIFACT_VERSION}.pom"
-INSTALL_DIR="${ARTIFACT}-${ARTIFACT_VERSION}-${CLASSIFIER}"
+ANGLE_INSTALL_DIR="${ARTIFACT}-${ARTIFACT_VERSION}-${CLASSIFIER}"
+TRANSLATOR_INSTALL_DIR="${ARTIFACT}-${ARTIFACT_VERSION}-${CLASSIFIER}_Translator"
 
 mkdir -p "${HOME}/bin"
 
@@ -91,6 +87,14 @@ pushd "${HOME}"
 
 case "$(uname)" in
 "Linux")
+
+  df -h
+  sudo apt clean
+  # shellcheck disable=SC2046
+  docker rmi -f $(docker image ls -aq)
+  sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/hostedtoolcache/boost /opt/ghc
+  df -h
+
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
   export PATH="${HOME}/depot_tools:${PATH}"
   ;;
@@ -141,19 +145,47 @@ git clone "https://chromium.googlesource.com/${TARGET_REPO_ORG}/${TARGET_REPO_NA
 cd "${TARGET_REPO_NAME}"
 git checkout "${COMMIT_ID}"
 
+# Manually create the .gclient file instead of executing scripts/bootstrap.py
+# because, on Linux and Mac, the bootstrap .gclient file pulls in a huge number
+# of Android dependencies that we don't need.
+cat << END >.gclient
+solutions = [
+  { "name"        : '.',
+    "url"         : 'https://chromium.googlesource.com/angle/angle.git',
+    "deps_file"   : 'DEPS',
+    "managed"     : False,
+    "custom_deps" : {
+    },
+    "custom_vars": {},
+  },
+]
+END
+
 case "$(uname)" in
 "Linux")
-  python scripts/bootstrap.py
+#  python3 scripts/bootstrap.py
+
+  # Remove large, unneeded dependencies from the DEPS file.
+  python3 ../remove_some_deps.py
+
   gclient sync
   ;;
 
 "Darwin")
-  python scripts/bootstrap.py
+#  python3 scripts/bootstrap.py
+
+  # Remove large, unneeded dependencies from the DEPS file.
+  python3 ../remove_some_deps.py
+
   gclient sync
   ;;
 
 "MINGW"*|"MSYS_NT"*)
-  python.bat scripts/bootstrap.py
+#  python3.bat scripts/bootstrap.py
+
+  # Remove large, unneeded dependencies from the DEPS file.
+  python3.bat ../remove_some_deps.py
+
   gclient.bat sync
   ;;
 
@@ -171,11 +203,8 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-# Other args: is_clang=false angle_enable_vulkan=true angle_enable_hlsl=true angle_enable_d3d9=false angle_enable_d3d11=false angle_enable_gl=false angle_enable_null=false angle_enable_metal=false angle_swiftshader=false
-GEN_ARGS="--args=is_debug=${IS_DEBUG} target_cpu=\"x64\""
-
-# Other targets: libEGL libGLESv2 libGLESv1_CM
-TARGETS=(angle_shader_translator)
+GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG}"
+TARGETS=(angle angle_shader_translator)
 
 case "$(uname)" in
 "Linux")
@@ -210,12 +239,14 @@ esac
 
 ls "out/${CONFIG}/"
 
-mkdir -p "${INSTALL_DIR}/bin"
-# mkdir -p "${INSTALL_DIR}/lib"
+mkdir -p "${TRANSLATOR_INSTALL_DIR}/bin"
 
-# cp "out/${CONFIG}/libEGL"* "${INSTALL_DIR}/lib/"
-# cp "out/${CONFIG}/libGLES"* "${INSTALL_DIR}/lib/"
-cp "out/${CONFIG}/angle_shader_translator"* "${INSTALL_DIR}/bin/"
+mkdir -p "${ANGLE_INSTALL_DIR}/lib"
+
+cp -r "out/${CONFIG}/libEGL"* "${ANGLE_INSTALL_DIR}/lib/"
+cp -r "out/${CONFIG}/libGLES"* "${ANGLE_INSTALL_DIR}/lib/"
+
+cp -r "out/${CONFIG}/angle_shader_translator"* "${TRANSLATOR_INSTALL_DIR}/bin/"
 
 # On Windows...
 case "$(uname)" in
@@ -226,8 +257,8 @@ case "$(uname)" in
   ;;
 
 "MINGW"*|"MSYS_NT"*)
-  # Remove .lib files.
-  # rm "${INSTALL_DIR}/lib/"*.lib
+#  # Remove .lib files.
+#  rm "${ANGLE_INSTALL_DIR}/lib/"*.lib
   # Restore PATH.
   export PATH="${OLD_PATH}"
   ;;
@@ -238,8 +269,12 @@ case "$(uname)" in
   ;;
 esac
 
-# TODO: re-add: "${INSTALL_DIR}/lib/"*
-for f in "${INSTALL_DIR}/bin/"*; do
+for f in "${ANGLE_INSTALL_DIR}/lib/"*; do
+  echo "${BUILD_REPO_SHA}">"${f}.build-version"
+  cp "${WORK}/COMMIT_ID" "${f}.version"
+done
+
+for f in "${TRANSLATOR_INSTALL_DIR}/bin/"*; do
   echo "${BUILD_REPO_SHA}">"${f}.build-version"
   cp "${WORK}/COMMIT_ID" "${f}.version"
 done
@@ -252,19 +287,27 @@ OPEN_SOURCE_LICENSES_URL="https://github.com/google/gfbuild-graphicsfuzz/release
 
 # Add licenses file.
 curl -fsSL -o OPEN_SOURCE_LICENSES.TXT "${OPEN_SOURCE_LICENSES_URL}"
-cp OPEN_SOURCE_LICENSES.TXT "${INSTALL_DIR}/"
+cp OPEN_SOURCE_LICENSES.TXT "${ANGLE_INSTALL_DIR}/"
+cp OPEN_SOURCE_LICENSES.TXT "${TRANSLATOR_INSTALL_DIR}/"
 
 # zip file.
-pushd "${INSTALL_DIR}"
-zip -r "../${INSTALL_DIR}.zip" ./*
+pushd "${ANGLE_INSTALL_DIR}"
+zip -r "../${ANGLE_INSTALL_DIR}.zip" ./*
 popd
 
-sha1sum "${INSTALL_DIR}.zip" >"${INSTALL_DIR}.zip.sha1"
+pushd "${TRANSLATOR_INSTALL_DIR}"
+zip -r "../${TRANSLATOR_INSTALL_DIR}.zip" ./*
+popd
+
+# sha1 files.
+sha1sum "${ANGLE_INSTALL_DIR}.zip" | cut -f 1 -d " " >"${ANGLE_INSTALL_DIR}.zip.sha1"
+
+sha1sum "${TRANSLATOR_INSTALL_DIR}.zip" | cut -f 1 -d " " >"${TRANSLATOR_INSTALL_DIR}.zip.sha1"
 
 # POM file.
 sed -e "s/@GROUP@/${GROUP_DOTS}/g" -e "s/@ARTIFACT@/${ARTIFACT}/g" -e "s/@VERSION@/${ARTIFACT_VERSION}/g" "../fake_pom.xml" >"${POM_FILE}"
 
-sha1sum "${POM_FILE}" >"${POM_FILE}.sha1"
+sha1sum "${POM_FILE}" | cut -f 1 -d " " >"${POM_FILE}.sha1"
 
 DESCRIPTION="$(echo -e "Automated build for ${TARGET_REPO_NAME} version ${COMMIT_ID}.\n$(git log --graph -n 3 --abbrev-commit --pretty='format:%h - %s <%an>')")"
 
@@ -275,7 +318,7 @@ if test "${GITHUB_REF}" != "refs/heads/master"; then
 fi
 
 # We do not use the GITHUB_TOKEN provided by GitHub Actions.
-# We cannot set enviroment variables or secrets that start with GITHUB_ in .yml files,
+# We cannot set environment variables or secrets that start with GITHUB_ in .yml files,
 # but the github-release-retry tool requires GITHUB_TOKEN, so we set it here.
 export GITHUB_TOKEN="${GH_TOKEN}"
 
@@ -285,7 +328,7 @@ export GITHUB_TOKEN="${GH_TOKEN}"
   --tag_name "${TAG}" \
   --target_commitish "${BUILD_REPO_SHA}" \
   --body_string "${DESCRIPTION}" \
-  "${INSTALL_DIR}.zip"
+  "${ANGLE_INSTALL_DIR}.zip"
 
 "${PYTHON}" -m github_release_retry.github_release_retry \
   --user "${BUILD_REPO_ORG}" \
@@ -293,7 +336,23 @@ export GITHUB_TOKEN="${GH_TOKEN}"
   --tag_name "${TAG}" \
   --target_commitish "${BUILD_REPO_SHA}" \
   --body_string "${DESCRIPTION}" \
-  "${INSTALL_DIR}.zip.sha1"
+  "${ANGLE_INSTALL_DIR}.zip.sha1"
+
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
+  "${TRANSLATOR_INSTALL_DIR}.zip"
+
+"${PYTHON}" -m github_release_retry.github_release_retry \
+  --user "${BUILD_REPO_ORG}" \
+  --repo "${BUILD_REPO_NAME}" \
+  --tag_name "${TAG}" \
+  --target_commitish "${BUILD_REPO_SHA}" \
+  --body_string "${DESCRIPTION}" \
+  "${TRANSLATOR_INSTALL_DIR}.zip.sha1"
 
 # Don't fail if pom cannot be uploaded, as it might already be there.
 
