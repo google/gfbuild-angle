@@ -243,10 +243,10 @@ mkdir -p "${TRANSLATOR_INSTALL_DIR}/bin"
 
 mkdir -p "${ANGLE_INSTALL_DIR}/lib"
 
-cp "out/${CONFIG}/libEGL"* "${ANGLE_INSTALL_DIR}/lib/"
-cp "out/${CONFIG}/libGLES"* "${ANGLE_INSTALL_DIR}/lib/"
+cp -r "out/${CONFIG}/libEGL"* "${ANGLE_INSTALL_DIR}/lib/"
+cp -r "out/${CONFIG}/libGLES"* "${ANGLE_INSTALL_DIR}/lib/"
 
-cp "out/${CONFIG}/angle_shader_translator"* "${TRANSLATOR_INSTALL_DIR}/bin/"
+cp -r "out/${CONFIG}/angle_shader_translator"* "${TRANSLATOR_INSTALL_DIR}/bin/"
 
 # On Windows...
 case "$(uname)" in
@@ -257,8 +257,8 @@ case "$(uname)" in
   ;;
 
 "MINGW"*|"MSYS_NT"*)
-  # Remove .lib files.
-  rm "${ANGLE_INSTALL_DIR}/lib/"*.lib
+#  # Remove .lib files.
+#  rm "${ANGLE_INSTALL_DIR}/lib/"*.lib
   # Restore PATH.
   export PATH="${OLD_PATH}"
   ;;
