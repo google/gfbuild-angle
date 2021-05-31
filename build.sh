@@ -163,28 +163,28 @@ END
 
 case "$(uname)" in
 "Linux")
-#  python scripts/bootstrap.py
+#  python3 scripts/bootstrap.py
 
   # Remove large, unneeded dependencies from the DEPS file.
-  python ../remove_some_deps.py
+  python3 ../remove_some_deps.py
 
   gclient sync
   ;;
 
 "Darwin")
-#  python scripts/bootstrap.py
+#  python3 scripts/bootstrap.py
 
   # Remove large, unneeded dependencies from the DEPS file.
-  python ../remove_some_deps.py
+  python3 ../remove_some_deps.py
 
   gclient sync
   ;;
 
 "MINGW"*|"MSYS_NT"*)
-#  python.bat scripts/bootstrap.py
+#  python3.bat scripts/bootstrap.py
 
   # Remove large, unneeded dependencies from the DEPS file.
-  python.bat ../remove_some_deps.py
+  python3.bat ../remove_some_deps.py
 
   gclient.bat sync
   ;;
