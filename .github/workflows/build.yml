@@ -18,8 +18,8 @@ on:
     branches:
       - 'master'
       - 'test*'
-#    paths:
-#      - 'COMMIT_ID'
+    paths:
+      - 'COMMIT_ID'
   workflow_dispatch:
 
 jobs:
@@ -27,13 +27,12 @@ jobs:
     strategy:
       matrix:
         os:
-#         - ubuntu-18.04
+         - ubuntu-18.04
          - windows-latest
-#         - macOS-latest
+         - macOS-latest
         config:
           - Debug
-#          - Release
-      fail-fast: false
+          - Release
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}
