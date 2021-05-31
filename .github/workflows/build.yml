@@ -20,46 +20,33 @@ on:
       - 'test*'
     paths:
       - 'COMMIT_ID'
+  workflow_dispatch:
 
 jobs:
   build:
     strategy:
       matrix:
         os:
-         - ubuntu-16.04
+         - ubuntu-18.04
          - windows-latest
          - macOS-latest
         config:
           - Debug
           - Release
-        backend:
-          # Just build the translator without messing with the backend options.
-          - Translator
-          # TODO: Other backends maybe.
     runs-on: ${{ matrix.os }}
     env:
       CONFIG: ${{ matrix.config }}
-      BACKEND: ${{ matrix.backend }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
-      - name: get_actions
-        run: |
-          mkdir -p ./../.github/actions/
-          pushd ./../.github/actions/
-            git clone https://github.com/actions/setup-python.git
-            pushd setup-python/
-              git checkout c181ffa198a1248f902bc2f7965d2f9a36c2d7f6
-            popd
-            git clone https://github.com/actions/checkout.git
-            pushd checkout/
-              git checkout a81bbbf8298c0fa03ea29cdc473d45769f953675
-            popd
-          popd
-        shell: bash
-
       - name: checkout
-        uses: ./../.github/actions/checkout
+        uses: actions/checkout@v2
+
+      - name: setup_python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+          architecture: x64
 
       - name: build_step_nix
         run: |
