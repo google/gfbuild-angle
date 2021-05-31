@@ -161,6 +161,9 @@ solutions = [
 ]
 END
 
+# Remove large, unneeded dependencies from the DEPS file.
+python ../remove_some_deps.py
+
 case "$(uname)" in
 "Linux")
 #  python scripts/bootstrap.py
