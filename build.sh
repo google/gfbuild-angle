@@ -203,7 +203,7 @@ if test "${CONFIG}" = "Debug"; then
   IS_DEBUG="true"
 fi
 
-GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG}"
+GEN_ARGS="--args=target_cpu=\"x64\" is_debug=${IS_DEBUG} is_component_build=false"
 TARGETS=(angle angle_shader_translator)
 
 case "$(uname)" in
@@ -243,9 +243,46 @@ mkdir -p "${TRANSLATOR_INSTALL_DIR}/bin"
 
 mkdir -p "${ANGLE_INSTALL_DIR}/lib"
 
-cp -r "out/${CONFIG}/libEGL"* "${ANGLE_INSTALL_DIR}/lib/"
-cp -r "out/${CONFIG}/libGLES"* "${ANGLE_INSTALL_DIR}/lib/"
+# Copy ANGLE files.
+case "$(uname)" in
+"Linux")
 
+  cp -r  \
+    "out/${CONFIG}/"*.so \
+    "out/${CONFIG}/vk_swiftshader_icd.json" \
+    "out/${CONFIG}/angledata" \
+    "${ANGLE_INSTALL_DIR}/lib/"
+
+  ;;
+
+"Darwin")
+
+  cp -r  \
+    "out/${CONFIG}/"*.dylib \
+    "out/${CONFIG}/vk_swiftshader_icd.json" \
+    "out/${CONFIG}/angledata" \
+    "${ANGLE_INSTALL_DIR}/lib/"
+
+  ;;
+
+"MINGW"*|"MSYS_NT"*)
+
+  cp -r  \
+    "out/${CONFIG}/"*.dll \
+    "out/${CONFIG}/"*.dll.* \
+    "out/${CONFIG}/vk_swiftshader_icd.json" \
+    "out/${CONFIG}/angledata" \
+    "${ANGLE_INSTALL_DIR}/lib/"
+  ;;
+
+*)
+  echo "Unknown OS"
+  exit 1
+  ;;
+esac
+
+
+# Copy shader translator binary.
 cp -r "out/${CONFIG}/angle_shader_translator"* "${TRANSLATOR_INSTALL_DIR}/bin/"
 
 # On Windows...

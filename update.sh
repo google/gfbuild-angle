@@ -26,7 +26,7 @@ TARGET_REPO_NAME="angle"
 BUILD_REPO_ORG="google"
 BUILD_REPO_NAME="gfbuild-angle"
 
-EXPECTED_NUM_ASSETS="15"
+EXPECTED_NUM_ASSETS="27"
 ###### END EDIT ######
 
 git checkout master
